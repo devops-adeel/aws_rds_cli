@@ -1,4 +1,4 @@
-# AWS Lambda RDS Backup
+# Cli tool for clone/restore AWS RDS cluster/instances.
 
 One Paragraph of project description goes here
 
