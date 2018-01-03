@@ -16,15 +16,17 @@ __version__ = "0.1"
 click.disable_unicode_literals_warning = True
 
 @click.command()
-@click.option('--count', default=1, help='Number of greetings.')
-@click.option('--name', prompt='Your name',
-              help='The person to greet.')
+@click.option('--count', default=1, help='Number of clones.')
+@click.option('--name', prompt='Please provide DB ID',
+              help='The ID of the DB Instance or Cluster')
 
 
 def hello(count, name):
-    """Simple program that greets NAME for a total of COUNT times."""
-    for amount in range(count):
-        click.echo('Hello %s!' % name)
+    """
+    Cli tool to run RDS clone or restore.
+    """
+    for amount in xrange(count):
+        click.echo('Cloning RDS Instance ID=%s %s' % (name, amount + 1))
 
 
 if __name__ == '__main__':
@@ -39,4 +41,4 @@ if __name__ == '__main__':
             """
             Test Function
             """
-            self.assertEqual(hello(3, 'Anas'), 'Anas')
+            self.assertEqual(hello(3, 'Adeel'), 'Adeel')
