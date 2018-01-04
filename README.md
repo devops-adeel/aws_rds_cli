@@ -1,36 +1,29 @@
 # Cli tool for clone/restore AWS RDS cluster/instances.
 
-One Paragraph of project description goes here
+Tool required for human users to be able clone RDS Cluster/Instance for blue/green deployment and also restore in case of disaster recovery scenarios.
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+First of all clone this repo and change into that directory.
+
+```
+git clone https://github.com/adeelahmad84/aws_rds_cli.git
+cd aws_rds_cli
+```
 
 ### Prerequisites
 
-What things you need to install the software and how to install them
-
-```
-Give examples
-```
+Please ensure you have virtualenv installed and run the script in a virtual environment.  All subsequent instructions will assume you are carrying this out in a virualenv.
 
 ### Installing
 
-A step by step series of examples that tell you have to get a development env running
-
-Say what the step will be
+You would need to install the dependancies using the following command
 
 ```
-Give the example
+pip install --editable .
 ```
 
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
+The script will be executabe and can be called as you would using a cli environment.
 
 ## Running the tests
 
