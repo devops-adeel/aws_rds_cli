@@ -19,7 +19,7 @@ RDS = boto3.client('rds')
 
 
 @click.command()
-@click.option('--instanceid', prompt='Please provide DB ID',
+@click.option('--instanceid', envvar='DBINSTANCEID',
               help='The ID of the DB Instance.')
 def cli(instanceid):
     """
@@ -29,9 +29,11 @@ def cli(instanceid):
         snapshots = RDS.describe_db_snapshots(
             DBInstanceIdentifier=instanceid
             )
-        print(snapshots)
+        latest = sorted(snapshots['DBSnapshots'], key=lambda item:
+                        item['SnapshotCreateTime'], reverse=True)[0]['DBSnapshotIdentifier']
+        click.echo(latest)
     except ClientError as error:
-        print(error)
+        click.echo(error)
 
 if __name__ == '__main__':
     cli()

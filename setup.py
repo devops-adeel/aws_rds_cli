@@ -8,14 +8,15 @@ Description:    Setup Files required for the cli app.
 from setuptools import setup
 
 setup(
-    name='Hello',
+    name='RDS',
     version='0.1',
-    py_modules=['hello'],
+    py_modules=['latest_snapshot'],
     install_requires=[
         'Click',
+        'Boto3',
         ],
     entry_points='''
         [console_scripts]
-        hello=hello:hello
+        latest_snapshot=latest_snapshot:cli
     '''
     )
