@@ -6,17 +6,13 @@ Author:         Adeel Ahmad
 Description:    Python Script to restore from RDS Backup
 """
 
-from __future__ import absolute_import, \
-        division, print_function, unicode_literals
 from botocore.exceptions import ClientError
 import boto3
 import click
 
 __version__ = "0.1"
 
-click.disable_unicode_literals_warning = True
 RDS = boto3.client('rds')
-INSTANCEID = "instanceid"
 
 
 def query_db_cluster(instanceid):
@@ -36,8 +32,7 @@ def query_db_cluster(instanceid):
 @click.option('--instanceid', envvar='DBINSTANCEID',
               help='The ID of the DB Instance.')
 def cli(instanceid):
-    """
-    This is a cli tool to find the latest snapshot for a given RDS instanceid
+    """This is a cli tool to find the latest snapshot for a given RDS instanceid
     """
     if query_db_cluster(instanceid):
         clusterid = query_db_cluster(instanceid)
@@ -48,9 +43,9 @@ def cli(instanceid):
             latest = sorted(snapshots['DBClusterSnapshots'], key=lambda item:
                             item['SnapshotCreateTime'],
                             reverse=True)[0]['DBClusterSnapshotIdentifier']
-            click.echo(latest)
+            click.secho(latest, fg='green')
         except ClientError as error:
-            click.echo(error)
+            click.secho(error, fg='red')
     else:
         try:
             snapshots = RDS.describe_db_snapshots(
@@ -59,12 +54,12 @@ def cli(instanceid):
             latest = sorted(snapshots['DBSnapshots'], key=lambda item:
                             item['SnapshotCreateTime'],
                             reverse=True)[0]['DBSnapshotIdentifier']
-            click.echo(latest)
+            click.secho(latest, fg='green')
         except ClientError as error:
-            click.echo(error)
+            click.secho(error, fg='red')
 
 
 if __name__ == '__main__':
-    cli(INSTANCEID)
+    cli()
     import doctest
     doctest.testmod()
