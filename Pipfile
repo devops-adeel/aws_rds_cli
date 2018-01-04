@@ -13,3 +13,5 @@ name = "pypi"
 
 cement = "*"
 click = "*"
+botocore = "*"
+"boto3" = "*"

@@ -31,56 +31,32 @@ def query_db_cluster(instanceid):
         return False
 
 
-@click.option('--count', default=1, help='Number of clones.')
-@click.option('--name', prompt='Please provide DB ID',
-              help='The ID of the DB Instance or Cluster')
 @click.group()
 def cli():
     """
-    This will the  main
+    This command line tool will allow you to clone RDS snapshots for
+    Blue/Green Deployment as well carrying out restore.
+    There are several options and commands to use.  Please see below options.
     """
     pass
 
 
 @click.command()
-@click.argument('--instanceid', prompt='Please provide DB ID',
-                help='The ID of the DB Instance.')
-@click.argument('--newid', prompt='Please provide the new target id',
-                help='The ID of the DB Instance.')
-def restore(instanceid, newid):
-    """
-    Main function restore from latest snapshot.
-    """
-    if query_db_cluster(instanceid):
-        cluster_id = query_db_cluster(instanceid)
-        try:
-            response = RDS.restore_db_cluster_to_point_in_time(
-                DBClusterIdentifier=newid,
-                SourceDBClusterIdentifier=cluster_id,
-                UseLatestRestorableTime=True
-                )
-            return response['DBCluster'][0]['Status']
-        except ClientError as error:
-            print(error)
-    else:
-        try:
-            response = RDS.restore_db_instance_to_point_in_time(
-                SourceDBInstanceIdentifier=instanceid,
-                TargetDBInstanceIdentifier=newid,
-                UseLatestRestorableTime=True
-                )
-            return response['DBInstance'][0]['DBInstanceStatus']
-        except ClientError as error:
-            print(error)
-
-
-@click.command()
+@click.option('--instanceid', prompt='Please provide DB ID',
+              help='The ID of the DB Instance.')
+@click.option('--newid', prompt='Please provide the new target id',
+              help='The ID of the DB Instance.')
 def clone(instanceid):
     """
-    Function to clone RDS instance/cluster for Blue/Green Deployement.
+    Function to clone RDS instance/cluster
+    for Blue/Green Deployement.
     """
     return instanceid
 
 
-cli.add_command(restore)
 cli.add_command(clone)
+
+if __name__ == '__main__':
+    cli()
+    import doctest
+    doctest.testmod()
