@@ -60,6 +60,6 @@ def restore(instanceid, newid):
 
 
 if __name__ == "__main__":
-    main(INSTANCEID)
+    restore()
     import doctest
     doctest.testmod()

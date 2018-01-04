@@ -42,6 +42,8 @@ def retrieve_latest_snapshot(instanceid):
                             item['SnapshotCreateTime'],
                             reverse=True)[0]['DBClusterSnapshotIdentifier']
             return latest
+        except KeyError:
+            click.secho('Previous Snapshot Still Creating', fg='red')
         except ClientError as error:
             click.secho(error, fg='red')
     else:
@@ -53,6 +55,8 @@ def retrieve_latest_snapshot(instanceid):
                             item['SnapshotCreateTime'],
                             reverse=True)[0]['DBSnapshotIdentifier']
             return latest
+        except KeyError:
+            click.secho('Previous Snapshot Still Creating', fg='red')
         except ClientError as error:
             click.secho(error, fg='red')
 
