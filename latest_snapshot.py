@@ -16,6 +16,7 @@ __version__ = "0.1"
 
 click.disable_unicode_literals_warning = True
 RDS = boto3.client('rds')
+INSTANCEID = "instanceid"
 
 
 def query_db_cluster(instanceid):
@@ -45,8 +46,8 @@ def cli(instanceid):
                 DBClusterIdentifier=clusterid
                 )
             latest = sorted(snapshots['DBClusterSnapshots'], key=lambda item:
-                            item['SnapshotCreateTime'], reverse=True) \
-                            [0]['DBClusterSnapshotIdentifier']
+                            item['SnapshotCreateTime'],
+                            reverse=True)[0]['DBClusterSnapshotIdentifier']
             click.echo(latest)
         except ClientError as error:
             click.echo(error)
@@ -56,12 +57,14 @@ def cli(instanceid):
                 DBInstanceIdentifier=instanceid
                 )
             latest = sorted(snapshots['DBSnapshots'], key=lambda item:
-                            item['SnapshotCreateTime'], reverse=True)[0]['DBSnapshotIdentifier']
+                            item['SnapshotCreateTime'],
+                            reverse=True)[0]['DBSnapshotIdentifier']
             click.echo(latest)
         except ClientError as error:
             click.echo(error)
 
+
 if __name__ == '__main__':
-    cli()
+    cli(INSTANCEID)
     import doctest
     doctest.testmod()

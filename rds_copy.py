@@ -11,9 +11,11 @@ from __future__ import absolute_import, \
 from datetime import datetime
 from botocore.exceptions import ClientError
 import boto3
+import click
 
 __version__ = "0.1"
 
+click.disable_unicode_literals_warning = True
 RDS = boto3.client('rds')
 INSTANCEID = "instanceid"
 NEWID = "newid"
@@ -42,48 +44,53 @@ def retrieve_latest_snapshot(instanceid):
             snapshots = RDS.describe_db_cluster_snapshots(
                 DBClusterIdentifier=clusterid
                 )
-            newest = max(snapshots['DBClusterSnapshots'].itervalues(),
-                         key=lambda latest: latest['SnapshotCreateTime']
-                         if isinstance(latest, datetime) else datetime.min)
-            return newest
+            latest = sorted(snapshots['DBClusterSnapshots'], key=lambda item:
+                            item['SnapshotCreateTime'],
+                            reverse=True)[0]['DBClusterSnapshotIdentifier']
+            click.echo(latest)
         except ClientError as error:
-            print(error)
+            click.echo(error)
     else:
         try:
             snapshots = RDS.describe_db_snapshots(
                 DBInstanceIdentifier=instanceid
                 )
-            newest = max(snapshots['DBSnapshots'].itervalues(),
-                         key=lambda latest: latest['SnapshotCreateTime'] if
-                         isinstance(latest, datetime) else datetime.min)
-            return newest
+            latest = sorted(snapshots['DBSnapshots'], key=lambda item:
+                            item['SnapshotCreateTime'],
+                            reverse=True)[0]['DBSnapshotIdentifier']
+            click.echo(latest)
         except ClientError as error:
-            print(error)
+            click.echo(error)
 
 
-def clone(instanceid, newid):
+@click.command()
+@click.option('--instanceid', envvar='DBINSTANCEID',
+              help='The ID of the DB Instance.')
+@click.option('--newid', prompt=True,
+              help='The ID of the DB Instance.')
+def cli(instanceid, newid):
     """
     This command will restore RDS DB from latest snapshot.
     """
+    snapshotid = retrieve_latest_snapshot(instanceid)
     if query_db_cluster(instanceid):
-        clusterid = query_db_cluster(instanceid)
         try:
             response = RDS.copy_db_cluster_snapshot(
-                SourceDBClusterSnapshotIdentifier=clusterid,
+                SourceDBClusterSnapshotIdentifier=snapshotid,
                 TargetDBClusterSnapshotIdentifier=newid
                 )
             return response['DBClusterSnapshot'][0]['Status']
         except ClientError as error:
-            print(error)
+            click.echo(error)
     else:
         try:
             response = RDS.copy_db_snapshot(
-                SourceDBSnapshotIdentifier=instanceid,
+                SourceDBSnapshotIdentifier=snapshotid,
                 TargetDBSnapshotIdentifier=newid
                 )
             return response['DBSnapshot'][0]['Status']
         except ClientError as error:
-            print(error)
+            click.echo(error)
 
 
 if __name__ == '__main__':
