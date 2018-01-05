@@ -44,12 +44,19 @@ def snapshot(instance_id):
                 DBClusterIdentifier=cluster_id,
                 DBClusterSnapshotIdentifier=snapshot_id
                 )
-            status = response['DBClusterSnapshot']['Status']
             # return response['DBClusterSnapshot']['DBClusterSnapshotArn']
             click.secho(response['DBClusterSnapshot']
                         ['DBClusterSnapshotArn'], fg='green')
         except ClientError as error:
             click.echo(error)
+
+        # while True:
+        #     status = RDS.describe_db_cluster_snapshots(
+        #         DBClusterSnapshotIdentifier=snapshot_id
+        #         )
+        #     click.echo('waiting for snapshot to be available')
+        #     if status['DBClusterSnapshots'][0]['Status'] == 'available':
+        #         break
     else:
         snapshot_id = str(instance_id) + now.strftime("%Y-%m-%d-%H-%M-%S")
         try:
@@ -57,21 +64,22 @@ def snapshot(instance_id):
                 DBInstanceIdentifier=instance_id,
                 DBSnapshotIdentifier=snapshot_id
                 )
-            status = response['DBSnapshot']['Status']
-            progress = response['DBSnapshot']['PercentProgress']
             # return response['DBSnapshot']['DBSnapshotArn']
-            while True:
-                click.echo(progress)
-                if status == 'available':
-                    break
-
             click.secho(response['DBSnapshot']
                         ['DBSnapshotArn'], fg='green')
         except ClientError as error:
             click.echo(error)
 
+        # while True:
+        #     status = RDS.describe_db_snapshots(
+        #         DBSnapshotIdentifier=snapshot_id
+        #         )
+        #     click.echo('waiting for snapshot to be available')
+        #     if status['DBSnapshots'][0]['Status'] == 'available':
+        #         break
 
-if __name__ == '__main__':
-    snapshot()
-    import doctest
-    doctest.testmod()
+
+# if __name__ == '__main__':
+#     snapshot()
+#     import doctest
+#     doctest.testmod()

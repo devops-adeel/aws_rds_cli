@@ -17,8 +17,7 @@ RDS = boto3.client('rds')
 
 
 def query_db_cluster(instance_id):
-    """
-    Querying whether DB is Clustered or not
+    """Querying whether DB is Clustered or not
     """
     try:
         response = RDS.describe_db_instances(
@@ -30,7 +29,8 @@ def query_db_cluster(instance_id):
 
 
 def snapshot(instance_id):
-    """This command will create point in time snapshot.
+    """This function is essentially the same as the clone function below
+    however has a return statement to use with the restore function
     """
     now = datetime.now()
     if query_db_cluster(instance_id):
@@ -38,46 +38,74 @@ def snapshot(instance_id):
         snapshot_id = str(cluster_id) + now.strftime("%Y-%m-%d-%H-%M-%S")
         try:
             response = RDS.create_db_cluster_snapshot(
-                DBClusterSnapshotIdentifier=snapshot_id,
-                DBClusterIdentifier=cluster_id
+                DBClusterIdentifier=cluster_id,
+                DBClusterSnapshotIdentifier=snapshot_id
                 )
-            # click.secho(response['DBClusterSnapshot']
-            #             ['DBClusterSnapshotArn'], fg='green')
-            status = response['DBClusterSnapshot']['Status']
-            with click.progressbar(status) as state:
-                while state == 'creating':
-                    click.echo('checking to see if the progress bar is there')
-                    if state == 'available':
-                        return response['DBClusterSnapshot']['DBClusterSnapshotArn']
+            return response['DBClusterSnapshot']['DBClusterSnapshotArn']
         except ClientError as error:
-            click.secho(error, fg='red')
+            click.echo(error)
+
     else:
-        snapshot_id = str(snapshot_id) + now.strftime("%Y-%m-%d-%H-%M-%S")
+        snapshot_id = str(instance_id) + now.strftime("%Y-%m-%d-%H-%M-%S")
         try:
             response = RDS.create_db_snapshot(
-                DBSnapshotIdentifier=snapshot_id,
-                DBInstanceIdentifier=instance_id
+                DBInstanceIdentifier=instance_id,
+                DBSnapshotIdentifier=snapshot_id
                 )
-            # click.secho(response['DBSnapshot']
-            #             ['DBSnapshotArn'], fg='green')
-            status = response['DBSnapshot']['Status']
-            with click.progressbar(status) as state:
-                while state == 'creating':
-                    click.echo('checking to see if the progress bar is there')
-                    if state == 'available':
-                        return response['DBSnapshot']['DBSnapshotArn']
+            return response['DBSnapshot']['DBSnapshotArn']
         except ClientError as error:
-            click.secho(error, fg='red')
+            click.echo(error)
 
 
-@click.command()
+@click.group()
+def cli():
+    """Command Line Tool to clone and restore RDS DB instance
+    or cluster for Blue-Green deployments.  Please the sub commands
+    below.  You can also use the options below to get more help.
+    """
+    pass
+
+
+@cli.command()
+@click.option('--instance_id', envvar='DBINSTANCEID',
+              help='The ID of the DB Instance.')
+def clone(instance_id):
+    """Prints the ARN of the snapshot to stdout.
+    """
+    now = datetime.now()
+    if query_db_cluster(instance_id):
+        cluster_id = query_db_cluster(instance_id)
+        snapshot_id = str(cluster_id) + now.strftime("%Y-%m-%d-%H-%M-%S")
+        try:
+            response = RDS.create_db_cluster_snapshot(
+                DBClusterIdentifier=cluster_id,
+                DBClusterSnapshotIdentifier=snapshot_id
+                )
+            click.secho(response['DBClusterSnapshot']
+                        ['DBClusterSnapshotArn'], fg='green')
+        except ClientError as error:
+            click.echo(error)
+
+    else:
+        snapshot_id = str(instance_id) + now.strftime("%Y-%m-%d-%H-%M-%S")
+        try:
+            response = RDS.create_db_snapshot(
+                DBInstanceIdentifier=instance_id,
+                DBSnapshotIdentifier=snapshot_id
+                )
+            click.secho(response['DBSnapshot']
+                        ['DBSnapshotArn'], fg='green')
+        except ClientError as error:
+            click.echo(error)
+
+
+@cli.command()
 @click.option('--instance_id', envvar='DBINSTANCEID',
               help='The ID of the DB Instance.')
 @click.option('--new_db_id', prompt=True,
               help='The ID of the new DB.')
 def deploy(instance_id, new_db_id):
-    """
-    Deploying new cluster or instance from latest snapshot.
+    """Deploy new DB from snapshot and print ARN to stdout.
     """
     snapshot_arn = snapshot(instance_id)
     if query_db_cluster(instance_id):
@@ -100,7 +128,7 @@ def deploy(instance_id, new_db_id):
             click.secho(error, fg='red')
 
 
-# if __name__ == '__main__':
-#     deploy()
-#     import doctest
-#     doctest.testmod()
+if __name__ == '__main__':
+    cli()
+    import doctest
+    doctest.testmod()

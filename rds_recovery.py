@@ -59,7 +59,7 @@ def restore(instanceid, newid):
             print(error)
 
 
-if __name__ == "__main__":
-    restore()
-    import doctest
-    doctest.testmod()
+# if __name__ == "__main__":
+#     restore()
+#     import doctest
+#     doctest.testmod()
