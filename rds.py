@@ -25,45 +25,20 @@ def query_db_cluster(instance_id):
             )
         return response['DBInstances'][0]['DBClusterIdentifier']
     except KeyError:
-        return False
-
-
-def snapshot(instance_id):
-    """This function is essentially the same as the clone function below
-    however has a return statement to use with the restore function
-    """
-    now = datetime.now()
-    if query_db_cluster(instance_id):
-        cluster_id = query_db_cluster(instance_id)
-        snapshot_id = str(cluster_id) + now.strftime("%Y-%m-%d-%H-%M-%S")
-        try:
-            response = RDS.create_db_cluster_snapshot(
-                DBClusterIdentifier=cluster_id,
-                DBClusterSnapshotIdentifier=snapshot_id
-                )
-            return response['DBClusterSnapshot']['DBClusterSnapshotArn']
-        except ClientError as error:
-            click.echo(error)
-
-    else:
-        snapshot_id = str(instance_id) + now.strftime("%Y-%m-%d-%H-%M-%S")
-        try:
-            response = RDS.create_db_snapshot(
-                DBInstanceIdentifier=instance_id,
-                DBSnapshotIdentifier=snapshot_id
-                )
-            return response['DBSnapshot']['DBSnapshotArn']
-        except ClientError as error:
-            click.echo(error)
+        db_subnet = response['DBInstances'][0]['DBSubnetGroup']['DBSubnetGroupName']
+        return [False, db_subnet]
 
 
 @click.group()
-def cli():
+@click.option('--verbose', is_flag=True,
+              help='Run the script in verbose mode.')
+def cli(verbose):
     """Command Line Tool to clone and restore RDS DB instance
     or cluster for Blue-Green deployments.  Please the sub commands
     below.  You can also use the options below to get more help.
     """
-    pass
+    if verbose:
+        click.echo('We are in verbose mode')
 
 
 @cli.command()
@@ -73,7 +48,7 @@ def clone(instance_id):
     """Prints the ARN of the snapshot to stdout.
     """
     now = datetime.now()
-    if query_db_cluster(instance_id):
+    if isinstance(query_db_cluster(instance_id), str):
         cluster_id = query_db_cluster(instance_id)
         snapshot_id = str(cluster_id) + now.strftime("%Y-%m-%d-%H-%M-%S")
         try:
@@ -81,8 +56,8 @@ def clone(instance_id):
                 DBClusterIdentifier=cluster_id,
                 DBClusterSnapshotIdentifier=snapshot_id
                 )
-            click.secho(response['DBClusterSnapshot']
-                        ['DBClusterSnapshotArn'], fg='green')
+            clone_arn = response['DBClusterSnapshot']['DBClusterSnapshotArn']
+            click.secho(clone_arn, fg='green')
         except ClientError as error:
             click.echo(error)
 
@@ -93,8 +68,8 @@ def clone(instance_id):
                 DBInstanceIdentifier=instance_id,
                 DBSnapshotIdentifier=snapshot_id
                 )
-            click.secho(response['DBSnapshot']
-                        ['DBSnapshotArn'], fg='green')
+            clone_arn = response['DBSnapshot']['DBSnapshotArn']
+            click.secho(clone_arn, fg='green')
         except ClientError as error:
             click.echo(error)
 
@@ -107,28 +82,33 @@ def clone(instance_id):
 def deploy(instance_id, new_db_id):
     """Deploy new DB from snapshot and print ARN to stdout.
     """
-    snapshot_arn = snapshot(instance_id)
-    if query_db_cluster(instance_id):
+    if isinstance(query_db_cluster(instance_id), str):
+        cluster_id = query_db_cluster(instance_id)
         try:
-            response = RDS.restore_db_cluster_from_snapshot(
+            response = RDS.restore_db_cluster_to_point_in_time(
                 DBClusterIdentifier=new_db_id,
-                SnapshotIdentifier=snapshot_arn
+                SourceDBClusterIdentifier=cluster_id,
+                UseLatestRestorableTime=True
                 )
             click.secho(response['DBCluster']['DBClusterArn'], fg='green')
         except ClientError as error:
-            click.secho(error, fg='red')
+            click.echo(error)
     else:
+        db_subnet = query_db_cluster(instance_id)
         try:
-            response = RDS.restore_db_instance_from_db_snapshot(
-                DBInstanceIdentifier=new_db_id,
-                DBSnapshotIdentifier=snapshot_arn
+            response = RDS.restore_db_instance_to_point_in_time(
+                SourceDBInstanceIdentifier=instance_id,
+                TargetDBInstanceIdentifier=new_db_id,
+                UseLatestRestorableTime=True,
+                PubliclyAccessible=False,
+                DBSubnetGroupName=db_subnet[1]
                 )
             click.secho(response['DBInstance']['DBInstanceArn'], fg='green')
         except ClientError as error:
-            click.secho(error, fg='red')
+            click.echo(error)
 
 
-# if __name__ == '__main__':
-#     cli()
-#     import doctest
-#     doctest.testmod()
+if __name__ == '__main__':
+    cli()
+    import doctest
+    doctest.testmod()
