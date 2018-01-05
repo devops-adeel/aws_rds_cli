@@ -11,7 +11,7 @@ from botocore.exceptions import ClientError
 import boto3
 import click
 
-__version__ = "0.1"
+__version__ = "1.0"
 
 RDS = boto3.client('rds')
 
@@ -30,22 +30,25 @@ def query_db_cluster(instance_id):
 
 
 @click.group()
-@click.option('--verbose', is_flag=True,
-              help='Run the script in verbose mode.')
-def cli(verbose):
+def cli():
     """Command Line Tool to clone and restore RDS DB instance
     or cluster for Blue-Green deployments.  Please the sub commands
     below.  You can also use the options below to get more help.
+
+    NOTE: Please ensure the RDS instance ID is stored in your environment
+    variable as DBINSTANCEID
     """
-    if verbose:
-        click.echo('We are in verbose mode')
+    pass
 
 
 @cli.command()
 @click.option('--instance_id', envvar='DBINSTANCEID',
-              help='The ID of the DB Instance.')
+              help='Retrieved from ENV')
 def clone(instance_id):
     """Prints the ARN of the snapshot to stdout.
+
+    NOTE: Please ensure the RDS instance ID is stored in your environment
+    variable as DBINSTANCEID
     """
     now = datetime.now()
     if isinstance(query_db_cluster(instance_id), str):
@@ -81,6 +84,9 @@ def clone(instance_id):
               help='The ID of the new DB.')
 def deploy(instance_id, new_db_id):
     """Deploy new DB from snapshot and print ARN to stdout.
+
+    NOTE: Please ensure the RDS instance ID is stored in your environment
+    variable as DBINSTANCEID
     """
     if isinstance(query_db_cluster(instance_id), str):
         cluster_id = query_db_cluster(instance_id)
@@ -106,9 +112,3 @@ def deploy(instance_id, new_db_id):
             click.secho(response['DBInstance']['DBInstanceArn'], fg='green')
         except ClientError as error:
             click.echo(error)
-
-
-if __name__ == '__main__':
-    cli()
-    import doctest
-    doctest.testmod()
