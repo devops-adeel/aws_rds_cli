@@ -34,15 +34,21 @@ def cli():
     """Command Line Tool to clone and restore RDS DB instance
     or cluster for Blue-Green deployments.  Please the sub commands
     below.  You can also use the options below to get more help.
+
+    NOTE: Please ensure the RDS instance ID is stored in your environment
+    variable as DBINSTANCEID
     """
     pass
 
 
 @cli.command()
 @click.option('--instance_id', envvar='DBINSTANCEID',
-              help='The ID of the DB Instance.')
+              help='Retrieved from ENV')
 def clone(instance_id):
     """Prints the ARN of the snapshot to stdout.
+
+    NOTE: Please ensure the RDS instance ID is stored in your environment
+    variable as DBINSTANCEID
     """
     now = datetime.now()
     if isinstance(query_db_cluster(instance_id), str):
@@ -78,6 +84,9 @@ def clone(instance_id):
               help='The ID of the new DB.')
 def deploy(instance_id, new_db_id):
     """Deploy new DB from snapshot and print ARN to stdout.
+
+    NOTE: Please ensure the RDS instance ID is stored in your environment
+    variable as DBINSTANCEID
     """
     if isinstance(query_db_cluster(instance_id), str):
         cluster_id = query_db_cluster(instance_id)
