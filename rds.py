@@ -11,7 +11,7 @@ from botocore.exceptions import ClientError
 import boto3
 import click
 
-__version__ = "0.1"
+__version__ = "1.0"
 
 RDS = boto3.client('rds')
 
