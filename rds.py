@@ -1,62 +1,134 @@
 #!/usr/bin/env python
 # -- coding: utf-8 --
 """
-File:           rds_restore.py
+File:           rds_copy.py
 Author:         Adeel Ahmad
-Description:    Python Script to restore from RDS Backup
+Description:    Python Script to copy snapshot and deploy
 """
 
-from __future__ import absolute_import, \
-        division, print_function, unicode_literals
+from datetime import datetime
 from botocore.exceptions import ClientError
 import boto3
 import click
 
 __version__ = "0.1"
 
-click.disable_unicode_literals_warning = True
 RDS = boto3.client('rds')
 
 
-def query_db_cluster(instanceid):
-    """
-    Querying whether DB is Clustered or not
+def query_db_cluster(instance_id):
+    """Querying whether DB is Clustered or not
     """
     try:
-        db_instance = RDS.describe_db_instances(
-            DBInstanceIdentifier=instanceid
+        response = RDS.describe_db_instances(
+            DBInstanceIdentifier=instance_id
             )
-        return db_instance['DBInstances'][0]['DBClusterIdentifier']
+        return response['DBInstances'][0]['DBClusterIdentifier']
     except KeyError:
         return False
 
 
+def snapshot(instance_id):
+    """This function is essentially the same as the clone function below
+    however has a return statement to use with the restore function
+    """
+    now = datetime.now()
+    if query_db_cluster(instance_id):
+        cluster_id = query_db_cluster(instance_id)
+        snapshot_id = str(cluster_id) + now.strftime("%Y-%m-%d-%H-%M-%S")
+        try:
+            response = RDS.create_db_cluster_snapshot(
+                DBClusterIdentifier=cluster_id,
+                DBClusterSnapshotIdentifier=snapshot_id
+                )
+            return response['DBClusterSnapshot']['DBClusterSnapshotArn']
+        except ClientError as error:
+            click.echo(error)
+
+    else:
+        snapshot_id = str(instance_id) + now.strftime("%Y-%m-%d-%H-%M-%S")
+        try:
+            response = RDS.create_db_snapshot(
+                DBInstanceIdentifier=instance_id,
+                DBSnapshotIdentifier=snapshot_id
+                )
+            return response['DBSnapshot']['DBSnapshotArn']
+        except ClientError as error:
+            click.echo(error)
+
+
 @click.group()
 def cli():
-    """
-    This command line tool will allow you to clone RDS snapshots for
-    Blue/Green Deployment as well carrying out restore.
-    There are several options and commands to use.  Please see below options.
+    """Command Line Tool to clone and restore RDS DB instance
+    or cluster for Blue-Green deployments.  Please the sub commands
+    below.  You can also use the options below to get more help.
     """
     pass
 
 
-@click.command()
-@click.option('--instanceid', prompt='Please provide DB ID',
+@cli.command()
+@click.option('--instance_id', envvar='DBINSTANCEID',
               help='The ID of the DB Instance.')
-@click.option('--newid', prompt='Please provide the new target id',
+def clone(instance_id):
+    """Prints the ARN of the snapshot to stdout.
+    """
+    now = datetime.now()
+    if query_db_cluster(instance_id):
+        cluster_id = query_db_cluster(instance_id)
+        snapshot_id = str(cluster_id) + now.strftime("%Y-%m-%d-%H-%M-%S")
+        try:
+            response = RDS.create_db_cluster_snapshot(
+                DBClusterIdentifier=cluster_id,
+                DBClusterSnapshotIdentifier=snapshot_id
+                )
+            click.secho(response['DBClusterSnapshot']
+                        ['DBClusterSnapshotArn'], fg='green')
+        except ClientError as error:
+            click.echo(error)
+
+    else:
+        snapshot_id = str(instance_id) + now.strftime("%Y-%m-%d-%H-%M-%S")
+        try:
+            response = RDS.create_db_snapshot(
+                DBInstanceIdentifier=instance_id,
+                DBSnapshotIdentifier=snapshot_id
+                )
+            click.secho(response['DBSnapshot']
+                        ['DBSnapshotArn'], fg='green')
+        except ClientError as error:
+            click.echo(error)
+
+
+@cli.command()
+@click.option('--instance_id', envvar='DBINSTANCEID',
               help='The ID of the DB Instance.')
-def clone(instanceid):
+@click.option('--new_db_id', prompt=True,
+              help='The ID of the new DB.')
+def deploy(instance_id, new_db_id):
+    """Deploy new DB from snapshot and print ARN to stdout.
     """
-    Function to clone RDS instance/cluster
-    for Blue/Green Deployement.
-    """
-    return instanceid
+    snapshot_arn = snapshot(instance_id)
+    if query_db_cluster(instance_id):
+        try:
+            response = RDS.restore_db_cluster_from_snapshot(
+                DBClusterIdentifier=new_db_id,
+                SnapshotIdentifier=snapshot_arn
+                )
+            click.secho(response['DBCluster']['DBClusterArn'], fg='green')
+        except ClientError as error:
+            click.secho(error, fg='red')
+    else:
+        try:
+            response = RDS.restore_db_instance_from_db_snapshot(
+                DBInstanceIdentifier=new_db_id,
+                DBSnapshotIdentifier=snapshot_arn
+                )
+            click.secho(response['DBInstance']['DBInstanceArn'], fg='green')
+        except ClientError as error:
+            click.secho(error, fg='red')
 
 
-cli.add_command(clone)
-
-if __name__ == '__main__':
-    cli()
-    import doctest
-    doctest.testmod()
+# if __name__ == '__main__':
+#     cli()
+#     import doctest
+#     doctest.testmod()

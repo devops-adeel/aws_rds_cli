@@ -10,13 +10,13 @@ from setuptools import setup
 setup(
     name='RDS',
     version='0.1',
-    py_modules=['latest_snapshot'],
+    py_modules=['rds'],
     install_requires=[
         'Click',
         'Boto3',
         ],
     entry_points='''
         [console_scripts]
-        latest_snapshot=latest_snapshot:cli
+        rds=rds:cli
     '''
     )
