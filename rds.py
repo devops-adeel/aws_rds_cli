@@ -30,15 +30,12 @@ def query_db_cluster(instance_id):
 
 
 @click.group()
-@click.option('--verbose', is_flag=True,
-              help='Run the script in verbose mode.')
-def cli(verbose):
+def cli():
     """Command Line Tool to clone and restore RDS DB instance
     or cluster for Blue-Green deployments.  Please the sub commands
     below.  You can also use the options below to get more help.
     """
-    if verbose:
-        click.echo('We are in verbose mode')
+    pass
 
 
 @cli.command()
@@ -106,9 +103,3 @@ def deploy(instance_id, new_db_id):
             click.secho(response['DBInstance']['DBInstanceArn'], fg='green')
         except ClientError as error:
             click.echo(error)
-
-
-if __name__ == '__main__':
-    cli()
-    import doctest
-    doctest.testmod()

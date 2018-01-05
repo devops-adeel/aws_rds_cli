@@ -13,18 +13,46 @@ cd aws_rds_cli
 
 ### Prerequisites
 
-Please ensure you have virtualenv installed and run the script in a virtual environment.  All subsequent instructions will assume you are carrying this out in a virualenv.
+The installation into a virtualenv is heavily recommended.
+
 
 ### Installing
 
 You would need to install the dependancies using the following command
 
 ```
+virtualenv venv
+. venv/bin/activate
 pip install --editable .
 ```
 
 The script will be executabe and can be called as you would using a cli environment.
 
+### Usage
+
+To test to see if your script has been installed properly type `rds --help` you should expect to see:
+
+```
+Usage: rds [OPTIONS] COMMAND [ARGS]...
+
+  Command Line Tool to clone and restore RDS DB instance or cluster for
+  Blue-Green deployments.  Please the sub commands below.  You can also use
+  the options below to get more help.
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  clone   Prints the ARN of the snapshot to stdout.
+  deploy  Deploy new DB from snapshot and print ARN to...
+
+```
+
+If you run the help switch on each command you see the following:
+
+```
+
+```
 ## Running the tests
 
 Explain how to run the automated tests for this system
@@ -51,7 +79,7 @@ Add additional notes about how to deploy this on a live system
 
 ## Built With
 
-Fill me in.
+Python2.7 and using Click framework
 
 ## Contributing
 

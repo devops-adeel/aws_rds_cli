@@ -14,6 +14,7 @@ setup(
     install_requires=[
         'Click',
         'Boto3',
+        'Botocore',
         ],
     entry_points='''
         [console_scripts]
