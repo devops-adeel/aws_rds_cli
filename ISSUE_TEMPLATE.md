@@ -1,21 +1,32 @@
-Hey there and thank you for using Issue Tracker!
+Provide a general summary of the issue in the Title above
 
-Our project, as you've probably heard, is getting really popular and truth is we're getting a bit overwhelmed by the activity surrounding it. There are just too many issues for us to manage properly.
+## Description
+Provide a more detailed introduction to the issue itself, and why you consider it to be a bug
 
-Do the checklist before filing an issue:
+## Expected Behavior
+Tell us what should happen
 
-- [ ] Is this something you can **debug and fix**? Send a pull request! Bug fixes and documentation fixes are welcome.
-- [ ] Have a usage question? Ask your question on [StackOverflow](http://stackoverflow.com). We use StackOverflow for usage question and GitHub for bugs.
-- [ ] Have an idea for a feature? Post the feature request on Product Pains. It has a voting system to surface the important issues. GitHub issues should only be used for bugs.
+## Actual Behavior
+Tell us what happens instead
 
+## Possible Fix
+Not obligatory, but suggest a fix or reason for the bug
 
-None of the above, create a bug report
-------------------------------------------------------------------
+## Steps to Reproduce
+Provide a link to a live example, or an unambiguous set of steps to
+reproduce this bug. Include code to reproduce, if relevant
+1.
+2.
+3.
+4.
 
-Make sure to add **all the information needed to understand the bug** so that someone can help. If the info is missing we'll add the 'Needs more information' label and close the issue until there is enough information.
+## Context
+How has this bug affected you? What were you trying to accomplish?
 
-- [ ] Provide a **minimal code snippet** / [rnplay](https://rnplay.org/) example that reproduces the bug.
-- [ ] Provide **screenshots** where appropriate
-- [ ] What's the **version** of React Native you're using?
-- [ ] Does this occur on iOS, Android or both?
-- [ ] Are you using Mac, Linux or Windows?
+## Your Environment
+Include as many relevant details about the environment you experienced the bug in
+* Version used:
+* Environment name and version (e.g. PHP 5.4 on nginx 1.9.1):
+* Server type and version:
+* Operating System and version:
+* Link to your project:
