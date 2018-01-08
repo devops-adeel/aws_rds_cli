@@ -7,10 +7,13 @@ Description:    Setup Files required for the cli app.
 """
 from setuptools import find_packages, setup
 
+about = {}
+
 setup(
     name='RDS',
-    version='1.0',
-    author='Adeel Ahmad'
+    version=about['__version__'],
+    description='AWS CLi for RDS Blue/Green',
+    author='Adeel Ahmad',
     py_modules=['rds'],
     install_requires=[
         'Click',
