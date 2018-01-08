@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -- coding: utf-8 --
+# -*- coding: utf-8 -*-
 """
 File:           rds_copy.py
 Author:         Adeel Ahmad
@@ -10,23 +10,11 @@ from datetime import datetime
 from botocore.exceptions import ClientError
 import boto3
 import click
+from utils import query_db_cluster
 
 __version__ = "1.0"
 
 RDS = boto3.client('rds')
-
-
-def query_db_cluster(instance_id):
-    """Querying whether DB is Clustered or not
-    """
-    try:
-        response = RDS.describe_db_instances(
-            DBInstanceIdentifier=instance_id
-            )
-        return response['DBInstances'][0]['DBClusterIdentifier']
-    except KeyError:
-        db_subnet = response['DBInstances'][0]['DBSubnetGroup']['DBSubnetGroupName']
-        return [False, db_subnet]
 
 
 @click.group()

@@ -5,7 +5,7 @@ File:           setup.py
 Author:         Adeel Ahmad
 Description:    Setup Files required for the cli app.
 """
-from setuptools import setup
+from setuptools import find_packages, setup
 
 setup(
     name='RDS',
@@ -16,6 +16,8 @@ setup(
         'Boto3',
         'Botocore',
         ],
+    packages=find_packages(),
+    include_package_data=True,
     entry_points='''
         [console_scripts]
         rds=rds:cli
