@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -- coding: utf-8 --
+# -*- coding: utf-8 -*-
 """
 File:           rds_copy.py
 Author:         Adeel Ahmad
@@ -10,26 +10,15 @@ from datetime import datetime
 from botocore.exceptions import ClientError
 import boto3
 import click
+from utils import query_db_cluster
+from __version__ import __version__
 
-__version__ = "1.0"
 
 RDS = boto3.client('rds')
 
 
-def query_db_cluster(instance_id):
-    """Querying whether DB is Clustered or not
-    """
-    try:
-        response = RDS.describe_db_instances(
-            DBInstanceIdentifier=instance_id
-            )
-        return response['DBInstances'][0]['DBClusterIdentifier']
-    except KeyError:
-        db_subnet = response['DBInstances'][0]['DBSubnetGroup']['DBSubnetGroupName']
-        return [False, db_subnet]
-
-
 @click.group()
+@click.version_option(prog_name='rds', version=__version__)
 def cli():
     """Command Line Tool to clone and restore RDS DB instance
     or cluster for Blue-Green deployments.  Please the sub commands
