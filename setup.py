@@ -9,7 +9,8 @@ from setuptools import find_packages, setup
 
 setup(
     name='RDS',
-    version='0.1',
+    version='1.0',
+    author='Adeel Ahmad'
     py_modules=['rds'],
     install_requires=[
         'Click',
@@ -18,8 +19,9 @@ setup(
         ],
     packages=find_packages(),
     include_package_data=True,
+    license='MIT',
     entry_points='''
         [console_scripts]
         rds=rds:cli
-    '''
+    ''',
     )
