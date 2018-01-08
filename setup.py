@@ -8,6 +8,8 @@ Description:    Setup Files required for the cli app.
 from setuptools import find_packages, setup
 
 about = {}
+with open("__version__.py") as f:
+    exec(f.read(), about)
 
 setup(
     name='RDS',
